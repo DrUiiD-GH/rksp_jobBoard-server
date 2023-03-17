@@ -1,5 +1,6 @@
 const {Description, Vacancy} = require("../models/models");
 const ApiError = require("../error/ApiError");
+const {where} = require("sequelize");
 
 
 class VacancyController {
@@ -105,8 +106,17 @@ class VacancyController {
         }catch (e){
             res.json(e.message)
         }
-
     }
+
+    async getAllByUserId(req, res, next){
+        try {
+            const vacancy = await Vacancy.findAll({where: {userId:req.user.id}})
+            return res.json(vacancy)
+        }catch (e){
+            req.json(e.message)
+        }
+    }
+
     async getOne(req, res) {
         const {id} = req.params
         const vacancy = await Vacancy.findOne(
