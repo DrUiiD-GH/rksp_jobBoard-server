@@ -13,16 +13,13 @@ class VacancyController {
                 salaryFrom,
                 salaryTo,
                 contacts,
-                userId,
                 categoryId,
                 employmentId,
                 scheduleId,
                 experienceId,
                 description
             } = req.body
-            if(!userId){
-                return next(ApiError.badRequest("Не указан пользователь"))
-            }
+            const id = req.user.id
 
             const vacancy = await Vacancy.create({
                 title,
@@ -30,7 +27,7 @@ class VacancyController {
                 salaryFrom,
                 salaryTo,
                 contacts,
-                userId,
+                userId:id,
                 categoryId,
                 employmentId,
                 scheduleId,
@@ -131,6 +128,12 @@ class VacancyController {
     async edit(req, res, next){
         try {
             const {id} = req.params
+
+            const vac = await Vacancy.findOne({where:{id}})
+            if(req.user.id !==  vac.userId){
+                return res.status(403).json({message:"Ошибка доступа"})
+            }
+
             const {
                 title,
                 nameCompany,
@@ -168,7 +171,7 @@ class VacancyController {
             }
 
 
-            return res.status(200).json("Update success!")
+            return res.status(200).json({message:"Update success!"})
         }catch (e){
             next(ApiError.badRequest(e.message))
         }
@@ -176,6 +179,11 @@ class VacancyController {
     async delete(req, res, next){
         try{
             const {id} = req.params
+
+            const vac = await Vacancy.findOne({where:{id}})
+            if(req.user.id !==  vac.userId){
+                return res.status(403).json({message:"Ошибка доступа"})
+            }
             await Description.destroy(
                 {
                     where:{vacancyId:id}
@@ -185,7 +193,7 @@ class VacancyController {
                 {
                     where: {id}
                 })
-            return res.status(200).json("Delete success!")
+            return res.status(200).json({message:"Delete success!"})
         }catch (e){
             next(ApiError.badRequest(e.message))
         }
